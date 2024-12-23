@@ -32,7 +32,7 @@ class AppDataBase{
     return openDatabase(
         dbPath,
       version: 1,
-      onCreate: (db,dbPath){
+      onCreate: (db,version){
           db.execute("create table note(note_id integer primary key autoincrement, title text, desc text)");
 
       }
