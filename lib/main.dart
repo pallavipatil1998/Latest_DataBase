@@ -31,8 +31,11 @@ class MyHomePage extends StatefulWidget {
 
 
 class _MyHomePageState extends State<MyHomePage> {
+  var titleController=TextEditingController();
+  var descController=TextEditingController();
   late AppDataBase myDb;
   List<Map<String,dynamic>> arrNotes=[];
+
 
   @override
   void initState() {
@@ -49,8 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     });
   }
-  void insertNote()async{
-    bool check= await myDb.addNote("Flutter", "The best course");
+  void insertNote(String title,String desc)async{
+    bool check= await myDb.addNote(title,desc);
     if(check){
       arrNotes=await myDb.fetchAllNotes();
       setState(() {
@@ -77,7 +80,53 @@ class _MyHomePageState extends State<MyHomePage> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          insertNote();
+          showModalBottomSheet(
+              context: context,
+              builder: (context){
+                return Container(
+                  height: 400,
+                  child: Column(
+                    children: [
+                      Text("ADD NOTE"),
+                      TextField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                          label: Text("Title"),
+                          hintText: "Enter Title",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5)
+                          )
+                        ),
+                      ),
+                      TextField(
+                        controller: descController,
+                        decoration: InputDecoration(
+                          label: Text("Desc"),
+                          hintText: "Enter Desc",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5)
+                          )
+                        ),
+                      ),
+                      ElevatedButton(
+                          onPressed: (){
+                            var mtitle=titleController.text.toString();
+                            var mdesc= descController.text.toString();
+                            insertNote(mtitle,mdesc);
+                            showAllNotes();
+                            titleController.clear();
+                            descController.text="";
+                            Navigator.pop(context);
+
+                          },
+                          child: Text("Add Note")
+                      )
+                    ],
+                  ),
+
+                );
+              }
+          );
         },
       backgroundColor: Colors.blue,
       child: Icon(Icons.add,color: Colors.white,),
