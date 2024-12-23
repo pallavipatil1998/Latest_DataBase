@@ -1,4 +1,5 @@
 import 'package:default_note_add_db/appdatabase.dart';
+import 'package:default_note_add_db/notesModel.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -34,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var titleController=TextEditingController();
   var descController=TextEditingController();
   late AppDataBase myDb;
-  List<Map<String,dynamic>> arrNotes=[];
+  List<NotesModel> arrNotes=[];
 
 
   @override
@@ -53,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
   void insertNote(String title,String desc)async{
-    bool check= await myDb.addNote(title,desc);
+    bool check= await myDb.addNote(NotesModel(title: title, desc: desc));
     if(check){
       arrNotes=await myDb.fetchAllNotes();
       setState(() {
@@ -70,9 +71,72 @@ class _MyHomePageState extends State<MyHomePage> {
       body: ListView.builder(
         itemCount: arrNotes.length,
           itemBuilder: (_ ,index){
-          return ListTile(
-            title:Text(arrNotes[index]["title"]),
-            subtitle: Text("${arrNotes[index]["desc"]}"),
+          return InkWell(
+            onTap: (){
+              titleController.text=arrNotes[index].title;
+              descController.text=arrNotes[index].desc;
+              showModalBottomSheet(context: context,
+                  builder: (context){
+                return Container(
+                  height: 400,
+                  child: Column(
+                    children: [
+                      Text("UPDATE NOTE"),
+                      TextField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                            label: Text("Title"),
+                            hintText: "UPDATE Title",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5)
+                            )
+                        ),
+                      ),
+                      TextField(
+                        controller: descController,
+                        decoration: InputDecoration(
+                            label: Text("Desc"),
+                            hintText: "UPDATE Desc",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5)
+                            )
+                        ),
+                      ),
+                      ElevatedButton(
+                          onPressed: ()async{
+                            var mtitle=titleController.text.toString();
+                            var mdesc= descController.text.toString();
+                          await  myDb.updateNote(NotesModel(
+                            note_id: arrNotes[index].note_id,
+                                title: mtitle, desc: mdesc
+                            ));
+                            showAllNotes();
+                            titleController.clear();
+                            descController.text="";
+                            Navigator.pop(context);
+
+                          },
+                          child: Text("UPDATE Note")
+                      )
+                    ],
+                  ),
+
+                );
+              }
+              );
+
+            },
+            child: ListTile(
+              title:Text(arrNotes[index].title),
+              subtitle: Text("${arrNotes[index].desc}"),
+              trailing: InkWell(
+                onTap: ()async{
+                  await myDb.deleteNotes(arrNotes[index].note_id!);
+                  showAllNotes();
+                },
+                child: Icon(Icons.delete),
+              ),
+            ),
           );
 
           }
